@@ -762,21 +762,23 @@ async function saveTasksToSupabase(){
       client: t.client||'', priority: t.priority||'med',
       day: Number(t.day), horainicio: t.horaInicio||t.hora||'09:00',
       horafin: t.horaFin||t.hora||'10:00', done: !!t.done,
-      notes: t.notes||'', weekkey: t.weekKey||'', weekoffset: t.weekOffset||0
+      notes: t.notes||'', weekkey: t.weekKey||'', weekoffset: t.weekOffset||t.weekoffset||0
     })))
   });
 }
 
 async function saveClientsToSupabase(){
-  // Delete all and re-insert
-  await sbFetch('clients', { method: 'DELETE', prefer: 'return=minimal' });
   if(clients.length > 0){
-    await sbFetch('clients', {
+    await sbFetch('clients?on_conflict=name', {
       method: 'POST',
-      prefer: 'return=representation',
+      prefer: 'resolution=merge-duplicates,return=representation',
       body: JSON.stringify(clients.map(name=>({ name })))
     });
   }
+}
+
+async function deleteClientFromSupabase(name){
+  await sbFetch('clients?name=eq.' + encodeURIComponent(name), { method: 'DELETE', prefer: 'return=minimal' });
 }
 
 async function deleteCollabFromSupabase(id){
@@ -1426,7 +1428,10 @@ function deleteClient(name, btn){
   if(inUse){showToast(`⚠ "${name}" tiene tareas asignadas`);return;}
   const item=btn.closest('.client-item');
   if(item){item.style.transition='opacity .2s,transform .2s';item.style.opacity='0';item.style.transform='translateX(6px)';
-    setTimeout(()=>{clients=clients.filter(c=>c!==name);saveData();renderSidebarClients();
+    setTimeout(()=>{
+      clients=clients.filter(c=>c!==name);
+      deleteClientFromSupabase(name);
+      renderSidebarClients();
       document.getElementById('fCliente').innerHTML=clients.map(c=>`<option>${c}</option>`).join('');
     },200);
   }
