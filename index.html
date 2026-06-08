@@ -898,9 +898,8 @@ function isUrgentSoon(t){
 function getWeekTasks(wk){ return tasks.filter(t=>t.weekKey===wk); }
 function getLoadPct(id,wk){
   const c=collaborators.find(x=>x.id===id);
-  if(c&&c.manualLoad!==undefined) return c.manualLoad;
-  const t=getWeekTasks(wk||currentWeekKey(currentWeekOffset)).filter(t=>t.responsable===id);
-  return Math.min(100,Math.round(t.reduce((s,x)=>s+PRIO_WEIGHT[x.priority],0)/12*100));
+  // Siempre usar manualLoad — la barra solo se mueve manualmente
+  return c&&c.manualLoad!==undefined ? c.manualLoad : 0;
 }
 function getLoadColor(p){ return p>=80?'#E8593C':p>=50?'#D4AC0D':'#1E8449'; }
 function isSaturated(id,wk){ return getWeekTasks(wk||currentWeekKey(currentWeekOffset)).filter(t=>t.responsable===id).length>=5; }
