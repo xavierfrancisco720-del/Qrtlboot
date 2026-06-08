@@ -1326,8 +1326,8 @@ function selectPrioByValue(val){
 function saveTask(){
   const name=document.getElementById('fName').value.trim();
   if(!name){document.getElementById('fName').focus();return;}
-  // Block on time conflict
-  if(checkTimeConflict()){showToast('⛔ Conflicto de horario — elige otro turno');return;}
+  // Warn on time conflict but allow saving
+  if(checkTimeConflict()){showToast('⚠ Horario traslapado — tarea guardada de todas formas');}
   const responsable=parseInt(document.getElementById('fResponsable').value);
   const client=document.getElementById('fCliente').value;
   const day=parseInt(document.getElementById('fDia').value);
